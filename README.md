@@ -108,3 +108,6 @@ See the lab guide for step-by-step instructions. Complete environment setup befo
 The `mock_data/` directory contains 10 cost centers, 17 vendors, 8 policies, and 15 sample
 purchase requests. The requests are designed to produce all three decision outcomes. Review
 `requests.json` carefully during Session 1 before writing any specification.
+
+
+Team 06
