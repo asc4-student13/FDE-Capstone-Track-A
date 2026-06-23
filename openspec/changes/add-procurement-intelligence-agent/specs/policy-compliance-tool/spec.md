@@ -20,7 +20,7 @@ The tool MUST return a structured object with at least:
 
 Each `violations` item MUST include:
 - `policy_id`
-- `rule_violated`
+- `rule_description`
 - `forced_decision` (`deny` or `escalate`)
 
 #### Scenario: No policy violations
