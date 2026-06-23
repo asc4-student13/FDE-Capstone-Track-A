@@ -13,3 +13,10 @@ The agent output SHALL include request_id, a decision constrained to approve, de
 #### Scenario: Structured recommendation is returned
 - **WHEN** the agent finishes evaluating a request
 - **THEN** it returns a recommendation object with constrained decision and non-empty rationale text
+
+### Requirement: Tool docstrings define explicit invocation timing
+Each procurement tool function SHALL include docstring guidance that explicitly states when the tool should be called by the agent.
+
+#### Scenario: Tool guidance is unambiguous
+- **WHEN** a developer reviews a procurement tool function docstring
+- **THEN** the docstring clearly states the invocation timing (for example, call for every purchase request)

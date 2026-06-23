@@ -3,14 +3,15 @@
 - [x] 1.1 Implement PurchaseRequest and ProcurementRecommendation Pydantic v2 models with typed fields and decision constraints.
 - [x] 1.2 Add rationale non-empty validation on ProcurementRecommendation output.
 - [x] 1.3 Implement data loader functions in data/loader.py for requests, vendors, policies, and budgets.
-- [ ] 1.4 Ensure tools consume loader functions and do not read mock_data files directly.
+- [x] 1.4 Ensure tools consume loader functions and do not read mock_data files directly.
 
 ## 2. Tool Implementations
 
-- [ ] 2.1 Implement check_budget tool to evaluate remaining budget, overage, and missing cost center/data error paths.
-- [ ] 2.2 Implement check_vendor_duplication tool for single-source threshold logic and conflicting contracted vendors.
-- [ ] 2.3 Implement check_policy_compliance tool for policy violations, forced decision signals, and severity aggregation.
-- [ ] 2.4 Implement assess_risk tool for vendor risk classification and unknown-vendor handling.
+- [x] 2.1 Implement check_budget tool to evaluate remaining budget, overage, and missing cost center/data error paths.
+- [x] 2.2 Implement check_vendor_duplication tool for single-source threshold logic and conflicting contracted vendors.
+- [x] 2.3 Implement check_policy_compliance tool for policy violations, forced decision signals, and severity aggregation.
+- [x] 2.4 Implement assess_risk tool for vendor risk classification and unknown-vendor handling.
+- [x] 2.5 Ensure every tool function docstring includes explicit "when to call" guidance.
 
 ## 3. Agent Wiring and Decision Logic
 
