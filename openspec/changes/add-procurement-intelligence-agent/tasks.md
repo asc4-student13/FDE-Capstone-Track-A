@@ -1,8 +1,8 @@
 ## 1. Data Models and Loader
 
-- [ ] 1.1 Implement PurchaseRequest and ProcurementRecommendation Pydantic v2 models with typed fields and decision constraints.
-- [ ] 1.2 Add rationale non-empty validation on ProcurementRecommendation output.
-- [ ] 1.3 Implement data loader functions in data/loader.py for requests, vendors, policies, and budgets.
+- [x] 1.1 Implement PurchaseRequest and ProcurementRecommendation Pydantic v2 models with typed fields and decision constraints.
+- [x] 1.2 Add rationale non-empty validation on ProcurementRecommendation output.
+- [x] 1.3 Implement data loader functions in data/loader.py for requests, vendors, policies, and budgets.
 - [ ] 1.4 Ensure tools consume loader functions and do not read mock_data files directly.
 
 ## 2. Tool Implementations
