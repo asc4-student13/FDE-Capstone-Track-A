@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from data.loader import load_budgets, load_policies, load_vendors
+from data import loader
 from models import PurchaseRequest
 
 
@@ -17,7 +17,7 @@ def _normalize_request(request: PurchaseRequest | dict[str, Any]) -> PurchaseReq
 
 def _get_policy_map() -> dict[str, dict[str, Any]]:
     """Load all policy records and map them by policy_id."""
-    policies = load_policies()
+    policies = loader.load_policies()
     return {str(policy.get("policy_id", "")): policy for policy in policies}
 
 
@@ -42,8 +42,8 @@ def check_policy_compliance(request: PurchaseRequest | dict[str, Any]) -> dict[s
     try:
         parsed_request = _normalize_request(request)
         policies_by_id = _get_policy_map()
-        vendors = load_vendors()
-        budgets = load_budgets()
+        vendors = loader.load_vendors()
+        budgets = loader.load_budgets()
 
         vendor = next(
             (item for item in vendors if item.get("vendor_id") == parsed_request.vendor_id),
@@ -217,10 +217,29 @@ def check_policy_compliance(request: PurchaseRequest | dict[str, Any]) -> dict[s
             "triggered_policy_ids": triggered_policy_ids,
             "message": message,
         }
+    except FileNotFoundError as exc:
+        return {
+            "check": "policy_compliance",
+            "status": "error",
+            "error_type": "file_not_found",
+            "violations": [],
+            "triggered_policy_ids": [],
+            "message": f"Policy compliance data loading failure: {exc}",
+        }
+    except KeyError as exc:
+        return {
+            "check": "policy_compliance",
+            "status": "error",
+            "error_type": "missing_key",
+            "violations": [],
+            "triggered_policy_ids": [],
+            "message": f"Policy compliance data missing required key: {exc}",
+        }
     except Exception as exc:
         return {
             "check": "policy_compliance",
             "status": "error",
+            "error_type": "unexpected_error",
             "violations": [],
             "triggered_policy_ids": [],
             "message": str(exc) or "Policy compliance evaluation failed unexpectedly.",

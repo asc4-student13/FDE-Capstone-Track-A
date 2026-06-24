@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from data.loader import load_policies, load_vendors
+from data import loader
 
 
 def check_vendor_duplication(vendor_id: str, category: str, total_amount: float) -> dict[str, object]:
@@ -28,8 +28,8 @@ def check_vendor_duplication(vendor_id: str, category: str, total_amount: float)
         - message: Human-readable summary of evaluation.
     """
     try:
-        vendors = load_vendors()
-        policies = load_policies()
+        vendors = loader.load_vendors()
+        policies = loader.load_policies()
 
         pol001 = next((p for p in policies if p.get("policy_id") == "POL-001"), None)
         threshold_amount = float(pol001.get("threshold_amount", 25_000.0)) if pol001 else 25_000.0
@@ -88,10 +88,33 @@ def check_vendor_duplication(vendor_id: str, category: str, total_amount: float)
             "is_requested_vendor_contracted": is_requested_vendor_contracted,
             "message": "No above-threshold single-source violation detected.",
         }
+    except FileNotFoundError as exc:
+        return {
+            "check": "vendor_duplication",
+            "status": "error",
+            "error_type": "file_not_found",
+            "triggered_policy_ids": [],
+            "conflicting_vendor_ids": [],
+            "conflicting_contracts": [],
+            "is_requested_vendor_contracted": False,
+            "message": f"Vendor or policy data loading failure: {exc}",
+        }
+    except KeyError as exc:
+        return {
+            "check": "vendor_duplication",
+            "status": "error",
+            "error_type": "missing_key",
+            "triggered_policy_ids": [],
+            "conflicting_vendor_ids": [],
+            "conflicting_contracts": [],
+            "is_requested_vendor_contracted": False,
+            "message": f"Vendor duplication data missing required key: {exc}",
+        }
     except Exception as exc:
         return {
             "check": "vendor_duplication",
             "status": "error",
+            "error_type": "unexpected_error",
             "triggered_policy_ids": [],
             "conflicting_vendor_ids": [],
             "conflicting_contracts": [],
