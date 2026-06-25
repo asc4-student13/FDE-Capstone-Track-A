@@ -10,6 +10,7 @@ class PurchaseRequest(BaseModel):
     requestor: str
     cost_center_id: str
     vendor_name: str
+    vendor_id: str
     category: str
     item_description: str
     quantity: int = Field(gt=0)

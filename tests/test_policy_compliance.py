@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import pytest
+from pydantic import ValidationError
+
 from data.loader import load_requests
 from models import PurchaseRequest
 from tools.policy_compliance import check_policy_compliance
@@ -20,6 +23,7 @@ def _to_purchase_request(payload: dict[str, object]) -> PurchaseRequest:
         requestor=str(payload["requestor"]),
         cost_center_id=str(payload["cost_center_id"]),
         vendor_name=str(payload["vendor_name"]),
+        vendor_id=str(payload["vendor_id"]),
         category=str(payload["category"]),
         item_description=str(payload["item_description"]),
         quantity=int(payload["quantity"]),
@@ -71,3 +75,23 @@ def test_pol_005_req_007_expired_contract_denies() -> None:
         and violation["forced_decision"] == "deny"
         for violation in result["violations"]
     )
+
+
+def test_purchase_request_missing_vendor_id_fails_validation() -> None:
+    """PurchaseRequest rejects payloads that omit required vendor_id."""
+    payload = _request_by_id("REQ-001")
+
+    with pytest.raises(ValidationError) as exc_info:
+        PurchaseRequest(
+            request_id=str(payload["request_id"]),
+            requestor=str(payload["requestor"]),
+            cost_center_id=str(payload["cost_center_id"]),
+            vendor_name=str(payload["vendor_name"]),
+            category=str(payload["category"]),
+            item_description=str(payload["item_description"]),
+            quantity=int(payload["quantity"]),
+            unit_price=float(payload["unit_price"]),
+            total_amount=float(payload["total_amount"]),
+        )
+
+    assert "vendor_id" in str(exc_info.value)
