@@ -136,7 +136,7 @@ def test_agent_escalates_when_budget_check_returns_error() -> None:
     assert "budget" in recommendation.rationale.lower()
     assert "load" in recommendation.rationale.lower()
 
-    # Ensure the patched loader failure was present in tool output during the run.
+    # Ensure the injected budget tool failure was present in tool output during the run.
     run_messages = result.all_messages_json().decode("utf-8")
-    assert "Budget data could not be loaded" in run_messages
-    assert "budgets.json missing" in run_messages
+    assert "budget data unavailable for" in run_messages.lower()
+    assert "cc-001" in run_messages.lower()
