@@ -14,17 +14,17 @@
 
 ## 3. Agent Wiring and Decision Logic
 
-- [ ] 3.1 Create the Pydantic AI procurement agent with output_type set to ProcurementRecommendation.
-- [ ] 3.2 Register all four tools and require complete four-check execution for every request.
-- [ ] 3.3 Implement recommendation precedence rules: escalate before deny before approve.
-- [ ] 3.4 Ensure tool error outcomes are surfaced in rationale and force escalation.
+- [x] 3.1 Create the Pydantic AI procurement agent with output_type set to ProcurementRecommendation.
+- [x] 3.2 Register all four tools and require complete four-check execution for every request.
+- [x] 3.3 Implement recommendation precedence rules: escalate before deny before approve.
+- [x] 3.4 Ensure tool error outcomes are surfaced in rationale and force escalation.
 
 ## 4. Testing and Verification
 
 - [x] 4.1 Add unit tests for each tool primary success path and key edge cases.
-- [ ] 4.2 Add agent tests that demonstrate all three outcomes: approve, deny, and escalate.
-- [ ] 4.3 Add tests that verify rationale is non-empty and references decision-driving checks/policies.
-- [ ] 4.4 Add at least one partial-data/tool-failure test to verify safe escalation behavior.
+- [x] 4.2 Add agent tests that demonstrate all three outcomes: approve, deny, and escalate.
+- [x] 4.3 Add tests that verify rationale is non-empty and references decision-driving checks/policies.
+- [x] 4.4 Add at least one partial-data/tool-failure test to verify safe escalation behavior.
 
 ## 5. Quality Gates and OpenSpec Validation
 
