@@ -71,7 +71,7 @@ def check_budget(cost_center_id: str, requested_amount: float) -> dict[str, obje
             "overage": max(0.0, normalized_requested_amount),
         }
 
-    remaining_budget = float(matched_budget.get("remaining_budget", 0.0))
+    remaining_budget = float(matched_budget.get("remaining", 0.0))
     overage = max(0.0, normalized_requested_amount - remaining_budget)
 
     return {
