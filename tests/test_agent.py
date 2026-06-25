@@ -1,8 +1,4 @@
-"""Tests for procurement agent recommendation outcomes.
-
-The suite uses request fixtures from mock_data/requests.json via loader helpers
-and executes the agent with a simulated model backend.
-"""
+"""Tests for Procurement Intelligence Agent error-escalation behavior."""
 
 from __future__ import annotations
 
@@ -115,9 +111,9 @@ def test_agent_escalates_when_budget_check_returns_error() -> None:
     request = _request_by_id("REQ-001")
     model = TestModel(
         custom_output_args={
-            "request_id": request.request_id,
+            "request_id": "REQ-ERR-001",
             "decision": "escalate",
-            "rationale": "Escalate due to budget tool error: budget data unavailable.",
+            "rationale": "Escalated due to budget data loading failure in check_budget.",
         }
     )
 
@@ -135,11 +131,12 @@ def test_agent_escalates_when_budget_check_returns_error() -> None:
 
     result = asyncio.run(_run_with_override())
 
-    result.data = result.output
-    assert result.data.decision == "escalate"
-    assert result.data.rationale.strip()
-    assert "error" in result.data.rationale.lower()
-    messages_json = result.all_messages_json()
-    if isinstance(messages_json, bytes):
-        messages_json = messages_json.decode("utf-8")
-    assert "budget" in messages_json.lower()
+    recommendation = result.output
+    assert recommendation.decision == "escalate"
+    assert "budget" in recommendation.rationale.lower()
+    assert "load" in recommendation.rationale.lower()
+
+    # Ensure the patched loader failure was present in tool output during the run.
+    run_messages = result.all_messages_json().decode("utf-8")
+    assert "Budget data could not be loaded" in run_messages
+    assert "budgets.json missing" in run_messages
