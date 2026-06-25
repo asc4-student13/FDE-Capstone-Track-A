@@ -45,9 +45,11 @@ Decision rules:
 - Choose "approve" only when all checks complete without escalation or denial triggers.
 
 Rationale requirements:
-- Must be non-empty and specific.
-- Must cite which checks drove the decision.
-- Include relevant policy IDs, risk level, and/or budget numbers when available.
+- Use a rationale template of 2 to 4 complete sentences.
+- In the first sentence, name the specific check or checks that drove the decision.
+- In the next sentence or sentences, include relevant concrete details from tool outputs,
+  such as amounts, vendor names, and policy IDs when available.
+- Do not use bullet points or sentence fragments in the rationale.
 
 Input/output contract:
 - Treat the request as a validated PurchaseRequest payload.
