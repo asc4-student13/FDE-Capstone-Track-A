@@ -16,6 +16,7 @@ from tools.vendor_duplication import check_vendor_duplication
 
 load_dotenv()
 _ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 
 
 _SYSTEM_PROMPT = """
@@ -80,6 +81,19 @@ def _normalize_request(request: PurchaseRequest | dict[str, Any]) -> PurchaseReq
     return PurchaseRequest.model_validate(request)
 
 
+def _decision_from_preflight(preflight_results: dict[str, dict[str, object]]) -> str:
+    """Map tool statuses to a deterministic final decision.
+
+    Priority order is escalate > deny > approve.
+    """
+    statuses = [str(result.get("status", "")).lower() for result in preflight_results.values()]
+    if any(status in {"error", "escalate"} for status in statuses):
+        return "escalate"
+    if any(status == "fail" for status in statuses):
+        return "deny"
+    return "approve"
+
+
 def recommend_procurement_action(
     request: PurchaseRequest | dict[str, Any],
 ) -> ProcurementRecommendation:
@@ -130,17 +144,33 @@ def recommend_procurement_action(
 
     try:
         result = agent.run_sync(user_prompt)
-        return result.data
+        recommendation = getattr(result, "data", None)
+        if recommendation is None:
+            recommendation = getattr(result, "output", None)
+        if recommendation is None:
+            raise RuntimeError("Agent run returned no structured output payload.")
+        return recommendation
     except Exception as exc:
-        key_note = " ANTHROPIC_API_KEY is missing." if not _ANTHROPIC_API_KEY else ""
+        fallback_decision = _decision_from_preflight(preflight_results)
+        configured_model = os.getenv("PROCUREMENT_AGENT_MODEL", "anthropic:claude-3-5-haiku-latest")
+        key_note = ""
+        if configured_model.startswith("anthropic:") and not _ANTHROPIC_API_KEY:
+            key_note = " ANTHROPIC_API_KEY is missing."
+        elif configured_model.startswith("openai:") and not _OPENAI_API_KEY:
+            key_note = " OPENAI_API_KEY is missing."
+
+        checks_summary = ", ".join(
+            f"{name}={result.get('status', 'unknown')}"
+            for name, result in preflight_results.items()
+        )
+
         return ProcurementRecommendation(
-            decision="escalate",
+            decision=fallback_decision,
             rationale=(
-                "Recommendation is escalate because budget, vendor_duplication, "
-                "policy_compliance, and risk_assessment checks could not be completed "
-                "due to a model/tool execution failure. "
+                f"Recommendation is {fallback_decision} using deterministic tool-based fallback "
+                "because model execution failed. "
                 f"Request {parsed_request.request_id} for vendor {parsed_request.vendor_id} "
-                f"at ${parsed_request.total_amount:,.2f} requires human review, with error "
-                f"context: {exc}.{key_note}"
+                f"at ${parsed_request.total_amount:,.2f} had local check statuses: "
+                f"{checks_summary}. Runtime error context: {exc}.{key_note}"
             ),
         )
