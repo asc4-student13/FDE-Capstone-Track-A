@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from data.loader import load_policies, load_vendors
+import data.loader as data_loader
 from models import PurchaseRequest
 
 Severity = Literal["deny", "escalate", "none"]
@@ -13,7 +13,7 @@ ForcedDecision = Literal["deny", "escalate"]
 
 def _get_policy_index() -> dict[str, dict[str, object]]:
     """Load policy records and index them by policy_id for quick lookups."""
-    policies = load_policies()
+    policies = data_loader.load_policies()
     return {
         str(policy.get("policy_id")): policy
         for policy in policies
@@ -78,12 +78,29 @@ def check_policy_compliance(purchase_request: PurchaseRequest) -> dict[str, obje
 
     try:
         policy_index = _get_policy_index()
-        vendors = load_vendors()
+        vendors = data_loader.load_vendors()
+    except FileNotFoundError as exc:
+        return {
+            "violations": [],
+            "violation_count": 0,
+            "highest_severity": "escalate",
+            "error_type": "file_not_found",
+            "error": f"Policy compliance data load failure: {exc}",
+        }
+    except KeyError as exc:
+        return {
+            "violations": [],
+            "violation_count": 0,
+            "highest_severity": "escalate",
+            "error_type": "key_error",
+            "error": f"Policy compliance data missing required field: {exc}",
+        }
     except Exception as exc:
         return {
             "violations": [],
             "violation_count": 0,
             "highest_severity": "escalate",
+            "error_type": "exception",
             "error": f"Policy compliance data load failure: {exc}",
         }
 
