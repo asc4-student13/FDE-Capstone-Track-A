@@ -1,0 +1,9 @@
+# Local environment secrets
+.env
+
+# Python cache artifacts
+__pycache__/
+*.py[cod]
+
+# Pytest cache
+.pytest_cache/
