@@ -1,1 +1,31 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="12" time="2.081" timestamp="2026-06-25T06:13:09.008872-04:00" hostname="LABPC"><testcase classname="tests.test_agent" name="test_agent_escalates_when_budget_data_loading_fails" time="0.041" /><testcase classname="tests.test_budget" name="test_check_budget_within_and_over_budget_for_cc_003" time="0.001" /><testcase classname="tests.test_policy_compliance" name="test_pol_004_req_009_catering_prohibition_denies" time="0.001" /><testcase classname="tests.test_policy_compliance" name="test_pol_002_manager_threshold_range_flags_request" time="0.001" /><testcase classname="tests.test_policy_compliance" name="test_pol_005_req_007_expired_contract_denies" time="0.002" /><testcase classname="tests.test_policy_compliance" name="test_purchase_request_missing_vendor_id_fails_validation" time="0.001" /><testcase classname="tests.test_risk_assessment" name="test_assess_risk_compliance_flagged_vendor_is_critical" time="0.002" /><testcase classname="tests.test_risk_assessment" name="test_assess_risk_expired_contract_vendor_is_high" time="0.001" /><testcase classname="tests.test_risk_assessment" name="test_assess_risk_no_contract_vendor_is_medium" time="0.002" /><testcase classname="tests.test_risk_assessment" name="test_assess_risk_active_compliant_vendor_is_low" time="0.001" /><testcase classname="tests.test_risk_assessment" name="test_assess_risk_missing_vendor_returns_error_context" time="0.001" /><testcase classname="tests.test_vendor_duplication" name="test_req_008_detects_expected_conflicting_vendors" time="0.001" /></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="16" time="4.396" timestamp="2026-06-25T06:48:11.185029-04:00" hostname="LABPC"><testcase classname="tests.test_agent" name="test_agent_req_001_approve" time="0.001"><failure message="Failed: async def functions are not natively supported.&#10;You need to install a suitable plugin for your async framework, for example:&#10;  - anyio&#10;  - pytest-asyncio&#10;  - pytest-tornasync&#10;  - pytest-trio&#10;  - pytest-twisted">async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted</failure></testcase><testcase classname="tests.test_agent" name="test_agent_req_006_deny_budget_overage" time="0.001"><failure message="Failed: async def functions are not natively supported.&#10;You need to install a suitable plugin for your async framework, for example:&#10;  - anyio&#10;  - pytest-asyncio&#10;  - pytest-tornasync&#10;  - pytest-trio&#10;  - pytest-twisted">async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted</failure></testcase><testcase classname="tests.test_agent" name="test_agent_req_009_policy_deny_catering" time="0.000"><failure message="Failed: async def functions are not natively supported.&#10;You need to install a suitable plugin for your async framework, for example:&#10;  - anyio&#10;  - pytest-asyncio&#10;  - pytest-tornasync&#10;  - pytest-trio&#10;  - pytest-twisted">async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted</failure></testcase><testcase classname="tests.test_agent" name="test_agent_req_011_escalate_compliance_flag" time="0.001"><failure message="Failed: async def functions are not natively supported.&#10;You need to install a suitable plugin for your async framework, for example:&#10;  - anyio&#10;  - pytest-asyncio&#10;  - pytest-tornasync&#10;  - pytest-trio&#10;  - pytest-twisted">async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted</failure></testcase><testcase classname="tests.test_agent" name="test_agent_escalates_when_budget_check_returns_error" time="0.001"><failure message="Failed: async def functions are not natively supported.&#10;You need to install a suitable plugin for your async framework, for example:&#10;  - anyio&#10;  - pytest-asyncio&#10;  - pytest-tornasync&#10;  - pytest-trio&#10;  - pytest-twisted">async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted</failure></testcase><testcase classname="tests.test_budget" name="test_check_budget_within_and_over_budget_for_cc_003" time="0.001" /><testcase classname="tests.test_policy_compliance" name="test_pol_004_req_009_catering_prohibition_denies" time="0.001" /><testcase classname="tests.test_policy_compliance" name="test_pol_002_manager_threshold_range_flags_request" time="0.001" /><testcase classname="tests.test_policy_compliance" name="test_pol_005_req_007_expired_contract_denies" time="0.002" /><testcase classname="tests.test_policy_compliance" name="test_purchase_request_missing_vendor_id_fails_validation" time="0.001" /><testcase classname="tests.test_risk_assessment" name="test_assess_risk_compliance_flagged_vendor_is_critical" time="0.001" /><testcase classname="tests.test_risk_assessment" name="test_assess_risk_expired_contract_vendor_is_high" time="0.001" /><testcase classname="tests.test_risk_assessment" name="test_assess_risk_no_contract_vendor_is_medium" time="0.001" /><testcase classname="tests.test_risk_assessment" name="test_assess_risk_active_compliant_vendor_is_low" time="0.001" /><testcase classname="tests.test_risk_assessment" name="test_assess_risk_missing_vendor_returns_error_context" time="0.001" /><testcase classname="tests.test_vendor_duplication" name="test_req_008_detects_expected_conflicting_vendors" time="0.001" /></testsuite></testsuites>
