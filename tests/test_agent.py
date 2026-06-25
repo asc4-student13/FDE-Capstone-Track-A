@@ -27,8 +27,13 @@ def mock_agent_run(monkeypatch: pytest.MonkeyPatch) -> None:
 
     decision_by_request_id = {
         "REQ-001": "approve",
+        "REQ-002": "approve",
+        "REQ-003": "approve",
         "REQ-006": "deny",
+        "REQ-007": "deny",
+        "REQ-008": "deny",
         "REQ-009": "deny",
+        "REQ-010": "escalate",
         "REQ-011": "escalate",
     }
 
@@ -89,6 +94,45 @@ def test_agent_policy_deny_req_009_catering(mock_agent_run: None) -> None:
 def test_agent_escalate_req_011_compliance_flagged_vendor(mock_agent_run: None) -> None:
     """Escalate case: REQ-011 compliance-flagged vendor Vertex Consulting."""
     asyncio.run(_run_case("REQ-011", "escalate"))
+
+
+@pytest.mark.parametrize(
+    "request_id",
+    [
+        "REQ-006",
+        "REQ-007",
+        "REQ-008",
+        "REQ-009",
+        "REQ-010",
+        "REQ-011",
+        "REQ-001",
+        "REQ-002",
+        "REQ-003",
+    ],
+)
+def test_agent_matches_expected_outcome_for_core_sample_requests(
+    mock_agent_run: None,
+    request_id: str,
+) -> None:
+    """Run agent for sample requests and assert decision matches expected_outcome."""
+
+    async def _run() -> None:
+        req = _request_by_id(request_id)
+        prompt = (
+            "Evaluate this purchase request using all registered tools and return a "
+            "ProcurementRecommendation.\n\n"
+            f"PurchaseRequest:\n{req.model_dump_json(indent=2)}"
+        )
+
+        result = await agent_module.agent.run(prompt)
+
+        assert req.expected_outcome is not None
+        assert req.expected_outcome in {"approve", "deny", "escalate"}
+        assert result.data.decision == req.expected_outcome
+        assert isinstance(result.data.rationale, str)
+        assert result.data.rationale.strip()
+
+    asyncio.run(_run())
 
 
 @pytest.mark.parametrize(

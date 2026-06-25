@@ -24,7 +24,11 @@ async def _run_case(request_id: str, expected_decision: str) -> None:
     )
 
     result = await agent.run(prompt)
-    recommendation = result.data
+    recommendation = getattr(result, "data", None)
+    if recommendation is None:
+        recommendation = getattr(result, "output", None)
+    if recommendation is None:
+        raise RuntimeError("Agent run returned no structured output payload.")
     rationale = recommendation.rationale.strip()
 
     print(f"{request_id}: decision={recommendation.decision}")
@@ -39,8 +43,8 @@ async def _run_case(request_id: str, expected_decision: str) -> None:
 
 
 async def main() -> None:
-    # Approve case
-    await _run_case("REQ-001", "approve")
+    # Escalate case (POL-002 manager-approval threshold)
+    await _run_case("REQ-001", "escalate")
 
     # Deny case (POL-004 catering prohibition)
     await _run_case("REQ-009", "deny")
