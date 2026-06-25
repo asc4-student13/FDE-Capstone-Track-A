@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from data.loader import load_vendors
+import data.loader as data_loader
 
 _ALLOWED_RISK_LEVELS = {"low", "medium", "high", "critical"}
 
@@ -45,7 +45,27 @@ def assess_risk(vendor_id: str) -> dict[str, object]:
         calling agent can include that context in its final recommendation rationale.
     """
     try:
-        vendors = load_vendors()
+        vendors = data_loader.load_vendors()
+    except FileNotFoundError as exc:
+        return {
+            "vendor_id": vendor_id,
+            "vendor_name": "Unknown",
+            "compliance_flag": False,
+            "contract_status": "unknown",
+            "risk_level": "critical",
+            "error_type": "file_not_found",
+            "error": f"Vendor data could not be loaded: {exc}",
+        }
+    except KeyError as exc:
+        return {
+            "vendor_id": vendor_id,
+            "vendor_name": "Unknown",
+            "compliance_flag": False,
+            "contract_status": "unknown",
+            "risk_level": "critical",
+            "error_type": "key_error",
+            "error": f"Vendor data is missing required field: {exc}",
+        }
     except Exception as exc:  # pragma: no cover - defensive fallback for loader failures.
         return {
             "vendor_id": vendor_id,
@@ -53,6 +73,7 @@ def assess_risk(vendor_id: str) -> dict[str, object]:
             "compliance_flag": False,
             "contract_status": "unknown",
             "risk_level": "critical",
+            "error_type": "exception",
             "error": f"Vendor data could not be loaded: {exc}",
         }
 

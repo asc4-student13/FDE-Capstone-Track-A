@@ -36,8 +36,10 @@ Decision priority is strict and deterministic:
 3) approve
 
 Decision rules:
-- If any tool returns an explicit error signal or tool data is incomplete, choose "escalate"
-  and include the failure context in rationale.
+- If any tool returns an explicit error result (for example, an `error` field and error type)
+  or tool data is incomplete, you MUST choose "escalate".
+- When escalating due to a tool error result, the rationale MUST explicitly reference the
+  tool failure and state that the request is escalated because data loading/validation failed.
 - If both escalation and denial signals are present, choose "escalate".
 - If no escalation signal exists and at least one denial signal exists, choose "deny".
 - Choose "approve" only when all checks complete without escalation or denial triggers.
