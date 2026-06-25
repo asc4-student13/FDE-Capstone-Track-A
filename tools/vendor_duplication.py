@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from data.loader import load_policies, load_vendors
+import data.loader as data_loader
 
 
 def check_vendor_duplication(
@@ -37,8 +37,34 @@ def check_vendor_duplication(
         violation is set to False so callers can safely escalate if needed.
     """
     try:
-        vendors = load_vendors()
-        policies = load_policies()
+        vendors = data_loader.load_vendors()
+        policies = data_loader.load_policies()
+    except FileNotFoundError as exc:
+        return {
+            "violation": False,
+            "vendor_id": vendor_id,
+            "category": category,
+            "requested_amount": requested_amount,
+            "threshold_amount": 0.0,
+            "policy_id": "POL-001",
+            "conflicting_vendor_ids": [],
+            "reason": "Unable to evaluate single-source restrictions because data load failed.",
+            "error_type": "file_not_found",
+            "error": f"Vendor duplication check data load failed: {exc}",
+        }
+    except KeyError as exc:
+        return {
+            "violation": False,
+            "vendor_id": vendor_id,
+            "category": category,
+            "requested_amount": requested_amount,
+            "threshold_amount": 0.0,
+            "policy_id": "POL-001",
+            "conflicting_vendor_ids": [],
+            "reason": "Unable to evaluate single-source restrictions because data is incomplete.",
+            "error_type": "key_error",
+            "error": f"Vendor duplication data missing required field: {exc}",
+        }
     except Exception as exc:  # pragma: no cover - defensive integration path
         return {
             "violation": False,
@@ -49,6 +75,7 @@ def check_vendor_duplication(
             "policy_id": "POL-001",
             "conflicting_vendor_ids": [],
             "reason": "Unable to evaluate single-source restrictions because data load failed.",
+            "error_type": "exception",
             "error": f"Vendor duplication check data load failed: {exc}",
         }
 

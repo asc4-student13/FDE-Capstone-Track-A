@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from data.loader import load_budgets
+import data.loader as data_loader
 
 
 def check_budget(cost_center_id: str, requested_amount: float) -> dict[str, object]:
@@ -41,9 +41,30 @@ def check_budget(cost_center_id: str, requested_amount: float) -> dict[str, obje
     normalized_requested_amount = float(requested_amount)
 
     try:
-        budgets = load_budgets()
+        budgets = data_loader.load_budgets()
+    except FileNotFoundError as exc:
+        return {
+            "error_type": "file_not_found",
+            "error": f"Budget data could not be loaded: {exc}",
+            "within_budget": False,
+            "cost_center_id": cost_center_id,
+            "remaining_budget": 0.0,
+            "requested_amount": normalized_requested_amount,
+            "overage": max(0.0, normalized_requested_amount),
+        }
+    except KeyError as exc:
+        return {
+            "error_type": "key_error",
+            "error": f"Budget data is missing required field: {exc}",
+            "within_budget": False,
+            "cost_center_id": cost_center_id,
+            "remaining_budget": 0.0,
+            "requested_amount": normalized_requested_amount,
+            "overage": max(0.0, normalized_requested_amount),
+        }
     except Exception as exc:  # pragma: no cover - defensive fallback for loader failures.
         return {
+            "error_type": "exception",
             "error": f"Budget data could not be loaded: {exc}",
             "within_budget": False,
             "cost_center_id": cost_center_id,
@@ -71,7 +92,19 @@ def check_budget(cost_center_id: str, requested_amount: float) -> dict[str, obje
             "overage": max(0.0, normalized_requested_amount),
         }
 
-    remaining_budget = float(matched_budget.get("remaining", 0.0))
+    try:
+        remaining_budget = float(matched_budget["remaining"])
+    except KeyError as exc:
+        return {
+            "error_type": "key_error",
+            "error": f"Budget data is missing required field: {exc}",
+            "within_budget": False,
+            "cost_center_id": cost_center_id,
+            "remaining_budget": 0.0,
+            "requested_amount": normalized_requested_amount,
+            "overage": max(0.0, normalized_requested_amount),
+        }
+
     overage = max(0.0, normalized_requested_amount - remaining_budget)
 
     return {
