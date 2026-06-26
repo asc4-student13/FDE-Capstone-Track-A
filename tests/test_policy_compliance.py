@@ -50,15 +50,26 @@ def test_pol_004_req_009_catering_prohibition_denies() -> None:
     )
 
 
-def test_pol_002_manager_threshold_range_flags_request() -> None:
-    """POL-002: any request from $10,000 to $49,999 triggers manager-approval escalation."""
+def test_pol_002_manager_threshold_range_is_process_note_only() -> None:
+    """POL-002 range does not force escalation without explicit approval metadata fields."""
     payload = _request_by_id("REQ-002")
     result = check_policy_compliance(_to_purchase_request(payload))
 
     assert 10_000.0 <= float(payload["total_amount"]) <= 49_999.99
+    assert result["highest_severity"] == "none"
+    assert not any(
+        violation["policy_id"] == "POL-002" for violation in result["violations"]
+    )
+
+
+def test_pol_003_near_director_threshold_escalates() -> None:
+    """Amounts within 5% below director threshold should escalate."""
+    payload = _request_by_id("REQ-014")
+    result = check_policy_compliance(_to_purchase_request(payload))
+
     assert result["highest_severity"] == "escalate"
     assert any(
-        violation["policy_id"] == "POL-002"
+        violation["policy_id"] == "POL-003"
         and violation["forced_decision"] == "escalate"
         for violation in result["violations"]
     )
