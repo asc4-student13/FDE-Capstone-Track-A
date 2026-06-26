@@ -53,6 +53,7 @@ def assess_risk(vendor_id: str) -> dict[str, object]:
             "compliance_flag": False,
             "contract_status": "unknown",
             "risk_level": "critical",
+            "forced_decision": "escalate",
             "error_type": "file_not_found",
             "error": f"Vendor data could not be loaded: {exc}",
         }
@@ -63,6 +64,7 @@ def assess_risk(vendor_id: str) -> dict[str, object]:
             "compliance_flag": False,
             "contract_status": "unknown",
             "risk_level": "critical",
+            "forced_decision": "escalate",
             "error_type": "key_error",
             "error": f"Vendor data is missing required field: {exc}",
         }
@@ -73,6 +75,7 @@ def assess_risk(vendor_id: str) -> dict[str, object]:
             "compliance_flag": False,
             "contract_status": "unknown",
             "risk_level": "critical",
+            "forced_decision": "escalate",
             "error_type": "exception",
             "error": f"Vendor data could not be loaded: {exc}",
         }
@@ -94,6 +97,7 @@ def assess_risk(vendor_id: str) -> dict[str, object]:
             "compliance_flag": False,
             "contract_status": "unknown",
             "risk_level": "high",
+            "forced_decision": "deny",
             "error": (
                 f"Vendor '{vendor_id}' not found in vendor records; "
                 "risk assessment cannot verify compliance or contract status."
@@ -117,10 +121,17 @@ def assess_risk(vendor_id: str) -> dict[str, object]:
     if risk_level not in _ALLOWED_RISK_LEVELS:  # pragma: no cover - defensive contract guard.
         risk_level = "high"
 
+    forced_decision = "none"
+    if risk_level == "critical":
+        forced_decision = "escalate"
+    elif risk_level == "high":
+        forced_decision = "deny"
+
     return {
         "vendor_id": vendor_id,
         "vendor_name": str(vendor_record.get("name", "")).strip(),
         "compliance_flag": compliance_flag,
         "contract_status": contract_status or "unknown",
         "risk_level": risk_level,
+        "forced_decision": forced_decision,
     }

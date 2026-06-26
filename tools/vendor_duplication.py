@@ -42,6 +42,7 @@ def check_vendor_duplication(
     except FileNotFoundError as exc:
         return {
             "violation": False,
+            "forced_decision": "none",
             "vendor_id": vendor_id,
             "category": category,
             "requested_amount": requested_amount,
@@ -55,6 +56,7 @@ def check_vendor_duplication(
     except KeyError as exc:
         return {
             "violation": False,
+            "forced_decision": "none",
             "vendor_id": vendor_id,
             "category": category,
             "requested_amount": requested_amount,
@@ -104,6 +106,7 @@ def check_vendor_duplication(
     if requested_amount <= threshold_amount:
         return {
             "violation": False,
+            "forced_decision": "none",
             "vendor_id": vendor_id,
             "category": category,
             "requested_amount": requested_amount,
@@ -119,6 +122,7 @@ def check_vendor_duplication(
     if category not in covered_categories:
         return {
             "violation": False,
+            "forced_decision": "none",
             "vendor_id": vendor_id,
             "category": category,
             "requested_amount": requested_amount,
@@ -128,6 +132,34 @@ def check_vendor_duplication(
             "reason": (
                 "No violation: this category is not covered by the single-source restriction "
                 "policy.")
+        }
+
+    requested_vendor_record = next(
+        (
+            vendor
+            for vendor in vendors
+            if str(vendor.get("vendor_id", "")).strip() == vendor_id
+        ),
+        None,
+    )
+    requested_vendor_active = (
+        isinstance(requested_vendor_record, dict)
+        and str(requested_vendor_record.get("contract_status", "")).strip().lower() == "active"
+    )
+
+    if requested_vendor_active:
+        return {
+            "violation": False,
+            "vendor_id": vendor_id,
+            "category": category,
+            "requested_amount": requested_amount,
+            "threshold_amount": threshold_amount,
+            "policy_id": "POL-001",
+            "conflicting_vendor_ids": [],
+            "reason": (
+                "No violation: selected vendor already holds an active contract in this "
+                "covered category."
+            ),
         }
 
     conflicting_vendor_ids = [
@@ -142,6 +174,7 @@ def check_vendor_duplication(
         conflicting_ids_text = ", ".join(conflicting_vendor_ids)
         return {
             "violation": True,
+            "forced_decision": "deny",
             "vendor_id": vendor_id,
             "category": category,
             "requested_amount": requested_amount,
@@ -156,6 +189,7 @@ def check_vendor_duplication(
 
     return {
         "violation": False,
+        "forced_decision": "none",
         "vendor_id": vendor_id,
         "category": category,
         "requested_amount": requested_amount,
