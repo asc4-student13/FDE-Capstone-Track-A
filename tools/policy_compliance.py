@@ -9,6 +9,7 @@ from models import PurchaseRequest
 
 Severity = Literal["deny", "escalate", "none"]
 ForcedDecision = Literal["deny", "escalate"]
+_DIRECTOR_NEAR_THRESHOLD_FRACTION = 0.05
 
 
 def _get_policy_index() -> dict[str, dict[str, object]]:
@@ -53,14 +54,16 @@ def check_policy_compliance(purchase_request: PurchaseRequest) -> dict[str, obje
     signal (``deny`` or ``escalate``). It also returns aggregate highest severity
     computed as ``escalate`` > ``deny`` > ``none``.
 
-    Evaluated rules:
+        Evaluated rules:
     - ``POL-004``: Category ``catering`` is prohibited and must be denied.
-        - ``POL-002``: Requests in the manager threshold range are non-compliant
-            without documented manager approval metadata and are escalated.
         - ``POL-005``: Vendors with expired contracts must be denied.
     - ``POL-006``: Vendors with an active compliance flag must be escalated.
     - ``POL-003``: Requests with total amount at or above director threshold
       must be escalated.
+        - ``POL-003`` near-threshold: Requests within 5% below the director threshold
+            are escalated for director awareness.
+        - ``POL-007``: Staffing requests above 40 hours without an active staffing
+            contract are denied.
 
     Args:
         purchase_request: Validated purchase request payload.
@@ -104,13 +107,13 @@ def check_policy_compliance(purchase_request: PurchaseRequest) -> dict[str, obje
             "error": f"Policy compliance data load failure: {exc}",
         }
 
-    vendor_name_normalized = purchase_request.vendor_name.strip().casefold()
+    vendor_id_normalized = purchase_request.vendor_id.strip()
     vendor_record = next(
         (
             vendor
             for vendor in vendors
             if isinstance(vendor, dict)
-            and str(vendor.get("name", "")).strip().casefold() == vendor_name_normalized
+            and str(vendor.get("vendor_id", "")).strip() == vendor_id_normalized
         ),
         None,
     )
@@ -125,18 +128,6 @@ def check_policy_compliance(purchase_request: PurchaseRequest) -> dict[str, obje
             )
         )
         violations.append(_build_violation(policy_id, rule_details, "deny"))
-
-    policy_id = "POL-002"
-    policy = policy_index.get(policy_id, {})
-    manager_threshold = float(policy.get("threshold_amount", 10_000.0))
-    manager_upper_threshold = float(policy.get("upper_threshold", 49_999.99))
-    if manager_threshold <= purchase_request.total_amount <= manager_upper_threshold:
-        rule_details = (
-            f"Request total ${purchase_request.total_amount:,.2f} is within manager approval "
-            f"range ${manager_threshold:,.2f}-${manager_upper_threshold:,.2f}. "
-            "Manager approval evidence is not present in PurchaseRequest and requires escalation."
-        )
-        violations.append(_build_violation(policy_id, rule_details, "escalate"))
 
     if isinstance(vendor_record, dict) and str(vendor_record.get("contract_status", "")).strip() == "expired":
         policy_id = "POL-005"
@@ -179,6 +170,30 @@ def check_policy_compliance(purchase_request: PurchaseRequest) -> dict[str, obje
             "Director-level approval is required."
         )
         violations.append(_build_violation(policy_id, rule_details, "escalate"))
+    elif purchase_request.total_amount >= director_threshold * (1 - _DIRECTOR_NEAR_THRESHOLD_FRACTION):
+        rule_details = (
+            f"Request total ${purchase_request.total_amount:,.2f} is within 5% below "
+            f"director threshold ${director_threshold:,.2f}. Director awareness is required."
+        )
+        violations.append(_build_violation(policy_id, rule_details, "escalate"))
+
+    if (
+        purchase_request.category.strip().casefold() == "staffing"
+        and purchase_request.quantity > 40
+        and (
+            not isinstance(vendor_record, dict)
+            or str(vendor_record.get("contract_status", "")).strip().lower() != "active"
+        )
+    ):
+        policy_id = "POL-007"
+        policy = policy_index.get(policy_id, {})
+        rule_details = str(
+            policy.get(
+                "description",
+                "Staffing engagements above 40 hours must use an active staffing contract.",
+            )
+        )
+        violations.append(_build_violation(policy_id, rule_details, "deny"))
 
     highest_severity = _determine_highest_severity(violations)
     return {
